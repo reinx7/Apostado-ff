@@ -193,13 +193,7 @@ class ApostaFilaView(discord.ui.View):
         player_list = "\n".join([f"<@{p}>" for p in players]) or "Nenhum jogador na fila."
         db_config = load_db('config')
         color_name = db_config.get('color', 'blue')
-        colors = {
-            'blue': discord.Color.blue(),
-            'green': discord.Color.green(),
-            'red': discord.Color.red(),
-            'purple': discord.Color.purple(),
-            'grey': discord.Color.dark_gray()
-        }
+        colors = {'blue': discord.Color.blue(), 'green': discord.Color.green(), 'red': discord.Color.red(), 'purple': discord.Color.purple(), 'grey': discord.Color.dark_gray()}
         embed_color = colors.get(color_name, discord.Color.blue())
         
         embed = discord.Embed(title=f"⚔️ {self.titulo}", color=embed_color)
@@ -207,17 +201,15 @@ class ApostaFilaView(discord.ui.View):
         embed.add_field(name="👥 Formato", value=f"`{self.jogadores}`", inline=True)
         embed.add_field(name="💰 Valor", value=f"`R$ {self.preco}`", inline=True)
         embed.add_field(name=f"🎮 Jogadores ({len(players)}/2)", value=player_list, inline=False)
-        
         if self.gif_url and self.gif_url.strip().startswith("http"):
             embed.set_image(url=self.gif_url.strip())
-        
         embed.set_footer(text="Clique no botão abaixo para entrar na fila!")
         return embed
 
     @discord.ui.button(label="Entrar na Fila", style=discord.ButtonStyle.success, emoji="🎮")
     async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
-        # Lógica original do Lovable mantida
+        # Lógica original mantida
         db_active = load_db('active_filas')
         players = db_active.get(self.fila_id, [])
         if interaction.user.id in players:
@@ -230,7 +222,6 @@ class ApostaFilaView(discord.ui.View):
         await interaction.message.edit(embed=self.get_embed(players), view=self)
         await interaction.followup.send("✅ Você entrou na fila!", ephemeral=True)
         if len(players) >= 2:
-            # Ticket automático
             await self.criar_ticket(interaction, players)
 
     @discord.ui.button(label="Sair da Fila", style=discord.ButtonStyle.danger, emoji="🏃")
