@@ -10,8 +10,8 @@ import random
 with open('config.json', 'r') as f:
     config = json.load(f)
 
-TOKEN = config['token']
-OWNERS = config.get('owner_ids', [])
+TOKEN = os.getenv("DISCORD_TOKEN")  # Token vem da variável de ambiente do Render
+OWNERS = config.get('owner_ids', [])  # Owners vêm do config.json (até 5)
 
 # --- BANCO DE DADOS SIMPLES (JSON) ---
 def load_db(name):
@@ -75,7 +75,7 @@ class ConfigPainelView(discord.ui.View):
             db = load_db('config')
             db['staff_role_id'] = sel.values[0].id
             save_db('config', db)
-            await it.followup.send(f"✅ Cargo {sel.values[0].name} configurado como Mediador!", ephemeral=True)
+            await it.followup.send(f"✅ Cargo configurado!", ephemeral=True)
         sel.callback = sel_callback
         v = discord.ui.View(); v.add_item(sel)
         await interaction.followup.send("Escolha o cargo de Mediador:", view=v, ephemeral=True)
@@ -88,7 +88,7 @@ class ConfigPainelView(discord.ui.View):
             db = load_db('config')
             db['admin_role_id'] = sel.values[0].id
             save_db('config', db)
-            await it.followup.send(f"✅ Cargo {sel.values[0].name} configurado como Admin!", ephemeral=True)
+            await it.followup.send(f"✅ Cargo configurado!", ephemeral=True)
         sel.callback = sel_callback
         v = discord.ui.View(); v.add_item(sel)
         await interaction.followup.send("Escolha o cargo de Admin:", view=v, ephemeral=True)
@@ -193,7 +193,13 @@ class ApostaFilaView(discord.ui.View):
         player_list = "\n".join([f"<@{p}>" for p in players]) or "Nenhum jogador na fila."
         db_config = load_db('config')
         color_name = db_config.get('color', 'blue')
-        colors = {'blue': discord.Color.blue(), 'green': discord.Color.green(), 'red': discord.Color.red(), 'purple': discord.Color.purple(), 'grey': discord.Color.dark_gray()}
+        colors = {
+            'blue': discord.Color.blue(),
+            'green': discord.Color.green(),
+            'red': discord.Color.red(),
+            'purple': discord.Color.purple(),
+            'grey': discord.Color.dark_gray()
+        }
         embed_color = colors.get(color_name, discord.Color.blue())
         
         embed = discord.Embed(title=f"⚔️ {self.titulo}", color=embed_color)
@@ -201,14 +207,17 @@ class ApostaFilaView(discord.ui.View):
         embed.add_field(name="👥 Formato", value=f"`{self.jogadores}`", inline=True)
         embed.add_field(name="💰 Valor", value=f"`R$ {self.preco}`", inline=True)
         embed.add_field(name=f"🎮 Jogadores ({len(players)}/2)", value=player_list, inline=False)
+        
         if self.gif_url and self.gif_url.strip().startswith("http"):
             embed.set_image(url=self.gif_url.strip())
+        
         embed.set_footer(text="Clique no botão abaixo para entrar na fila!")
         return embed
 
     @discord.ui.button(label="Entrar na Fila", style=discord.ButtonStyle.success, emoji="🎮")
     async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
+        # Lógica original do Lovable mantida
         db_active = load_db('active_filas')
         players = db_active.get(self.fila_id, [])
         if interaction.user.id in players:
@@ -221,12 +230,8 @@ class ApostaFilaView(discord.ui.View):
         await interaction.message.edit(embed=self.get_embed(players), view=self)
         await interaction.followup.send("✅ Você entrou na fila!", ephemeral=True)
         if len(players) >= 2:
-            # Lógica de ticket automático (mantida do original)
+            # Ticket automático
             await self.criar_ticket(interaction, players)
-
-    async def criar_ticket(self, interaction, players):
-        # Lógica de ticket mantida do Lovable (não alterei)
-        pass  # (você pode expandir aqui se quiser)
 
     @discord.ui.button(label="Sair da Fila", style=discord.ButtonStyle.danger, emoji="🏃")
     async def leave(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -250,7 +255,6 @@ class ApostaCriarModal(discord.ui.Modal, title="Criar Painel de Aposta"):
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        # Lógica original do Lovable mantida
         precos_raw = [p.strip() for p in self.precos.value.split(',')]
         precos_lista = []
         for p in precos_raw:
