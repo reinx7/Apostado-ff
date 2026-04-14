@@ -466,4 +466,6 @@ async def saldo(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 # ========== INICIALIZAÇÃO ==========
-if __name__ 
+if __name__":
+    keep_alive()   # Mantém o bot vivo no Render
+    bot.run(TOKEN
