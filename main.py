@@ -5,13 +5,29 @@ import json
 import os
 import asyncio
 import random
+from flask import Flask
+from threading import Thread
+
+# --- KEEP ALIVE (embutido para o Render) ---
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot está vivo!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
 
 # --- CARREGAR CONFIGURAÇÃO ---
 with open('config.json', 'r') as f:
     config = json.load(f)
 
-TOKEN = os.getenv("DISCORD_TOKEN")  # Token vem da variável de ambiente do Render
-OWNERS = config.get('owner_ids', [])  # Owners vêm do config.json (até 5)
+TOKEN = os.getenv("DISCORD_TOKEN")
+OWNERS = config.get('owner_ids', [])
 
 # --- BANCO DE DADOS SIMPLES (JSON) ---
 def load_db(name):
@@ -209,7 +225,6 @@ class ApostaFilaView(discord.ui.View):
     @discord.ui.button(label="Entrar na Fila", style=discord.ButtonStyle.success, emoji="🎮")
     async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
-        # Lógica original mantida
         db_active = load_db('active_filas')
         players = db_active.get(self.fila_id, [])
         if interaction.user.id in players:
