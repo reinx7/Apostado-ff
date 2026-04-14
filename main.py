@@ -102,7 +102,6 @@ class FilaView(discord.ui.View):
         await interaction.message.edit(embed=embed, view=self)
         await interaction.response.send_message("✅ Você entrou na fila com **Gelo infinito**!", ephemeral=True)
         
-        # Verificar se a fila está cheia
         max_jogadores = int(fila["formato"].split("x")[0]) * 2
         if len(fila["jogadores"]) >= max_jogadores:
             await iniciar_partida(interaction, fila)
@@ -231,7 +230,6 @@ async def aposta_criar(interaction: discord.Interaction, tipo: app_commands.Choi
             await interaction.followup.send(f"❌ Valor inválido: `{valor}`. Use números (ex: 5.50)", ephemeral=True)
             return
         
-        # Formatar valor
         valor_formatado = f"{float(valor):.2f}".replace(".", ",")
         
         fila_data = {
@@ -247,7 +245,6 @@ async def aposta_criar(interaction: discord.Interaction, tipo: app_commands.Choi
         msg = await interaction.channel.send(embed=embed, view=view)
         fila_data["msg_id"] = msg.id
         filas[f"{interaction.channel.id}_{msg.id}"] = fila_data
-        # Atualizar view com channel_id correto
         view.channel_id = f"{interaction.channel.id}_{msg.id}"
     
     await interaction.followup.send(f"✅ {len(valores_lista)} fila(s) criada(s) com sucesso!", ephemeral=True)
@@ -466,4 +463,7 @@ async def saldo(interaction: discord.Interaction):
         color=EMBED_COLOR
     )
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
-    await 
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+# ========== INICIALIZAÇÃO ==========
+if __name__ 
