@@ -8,7 +8,7 @@ from keep_alive import keep_alive
 
 # ========== CONFIGURAÇÃO ==========
 TOKEN = os.getenv("DISCORD_TOKEN")
-EMBED_COLOR = 0xFF0000  # Vermelho como no estilo Nulla
+EMBED_COLOR = 0xFF0000
 PREFIX = "!"
 
 intents = discord.Intents.all()
@@ -27,7 +27,9 @@ status_messages = [
     "👥 Entre na fila agora",
     "💰 Apostas Free Fire",
     "🛡️ Mediadores disponíveis",
-    "🏆 Sala de apostas ativa"
+    "🏆 Sala de apostas ativa",
+    "Nulla - Free Fire",
+    "Aposte e venha jogar!"
 ]
 status_index = 0
 
@@ -101,7 +103,6 @@ class FilaView(discord.ui.View):
         
         await interaction.followup.send("✅ Você entrou na fila com sucesso!", ephemeral=True)
         
-        # Verifica se atingiu 2 jogadores
         if len(fila["jogadores"]) >= 2:
             await self.iniciar_partida(interaction, fila)
 
@@ -129,7 +130,6 @@ class FilaView(discord.ui.View):
             color=0x00FF00
         )
         await interaction.channel.send(embed=embed)
-        # Limpa a fila após iniciar
         fila["jogadores"] = []
 
 # ========== COMANDOS SLASH ==========
@@ -150,7 +150,6 @@ async def aposta_criar(interaction: discord.Interaction, tipo: app_commands.Choi
     
     await interaction.response.defer(ephemeral=True)
     
-    # Detecta formato pelo nome do canal
     canal_nome = interaction.channel.name.lower()
     formato = "1x1"
     for f in ["4x4", "3x3", "2x2", "1x1"]:
